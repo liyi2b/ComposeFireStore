@@ -117,7 +117,22 @@ fun Birth(m: Modifier){
             }) {
                 Text("新增/修改資料")
             }
-            Button(onClick = {  }) {
+            Button(onClick = { db.collection("users")
+                .whereEqualTo("userName", userName)
+                .get()
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        msg = ""
+                        for (document in task.result!!) {
+                            msg += "文件id：" + document.id + "\n名字：" + document.data["userName"] +
+                                    "\n出生體重：" + document.data["userWeight"].toString() + "\n\n"
+                        }
+                        if (msg == "") {
+                            msg = "查無資料"
+                        }
+                    }
+                }
+            }) {
                 Text("查詢資料")
             }
             Button(onClick = {  }) {
