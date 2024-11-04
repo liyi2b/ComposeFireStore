@@ -51,8 +51,9 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Birth(m: Modifier){
-    var userName by remember { mutableStateOf("李怡蓁")}
+    var userName by remember { mutableStateOf("李怡蓁")}  //預設文字
     var userWeight by remember { mutableStateOf(3800)}
+    var userPassword by remember { mutableStateOf("")}
 
 
     Column {
@@ -64,8 +65,7 @@ fun Birth(m: Modifier){
             modifier = m,
 
             label = { Text("姓名") },
-            placeholder = { Text("請輸入您的姓名") }
-
+            placeholder = { Text("請輸入您的姓名") }  //沒輸入值得時候顯示
 
         )
 
@@ -79,10 +79,24 @@ fun Birth(m: Modifier){
             },
             label = { Text("出生體重") },
             keyboardOptions = KeyboardOptions
-                (keyboardType = KeyboardType.Number)
+                (keyboardType = KeyboardType.Number)   //彈出數字鍵盤
         )
 
-        Text("您輸入的姓名是：$userName\n出生體重為：$userWeight 公克")
+        TextField(
+            value = userPassword,
+            onValueChange = { newText ->
+                userPassword = newText
+            },
+            label = { Text("密碼") },
+            placeholder = { Text(text = "請輸入您的密碼") },
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions
+                (keyboardType = KeyboardType.Password)
+        )
+
+
+        Text("您輸入的姓名是：$userName\n出生體重為：$userWeight 公克"
+                + "\n密碼：$userPassword")
     }
 
 }
