@@ -59,6 +59,7 @@ fun Birth(m: Modifier){
                 userName = newText
             },
             modifier = m,
+
             label = { Text("姓名") },
             placeholder = { Text("請輸入您的姓名") }
 
