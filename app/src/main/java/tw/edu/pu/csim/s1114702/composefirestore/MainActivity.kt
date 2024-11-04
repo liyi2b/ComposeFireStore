@@ -105,7 +105,9 @@ fun Birth(m: Modifier){
         Row {
             Button(onClick = { val user = Person(userName, userWeight, userPassword)
                 db.collection("users")
-                    .add(user)
+                    //.add(user)
+                    .document(userName)
+                    .set(user)     //資料不存在做新增，資料存在做修改
                     .addOnSuccessListener { documentReference ->
                         msg = "新增/異動資料成功"
                     }
