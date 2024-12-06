@@ -49,6 +49,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+
     data class Person(
         var userName: String = "",
         var userWeight: String = "",
