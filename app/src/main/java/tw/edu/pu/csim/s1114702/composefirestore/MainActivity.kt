@@ -1,5 +1,246 @@
 package tw.edu.pu.csim.s1114702.composefirestore
 
+
+import android.os.Bundle
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import tw.edu.pu.csim.s1114702.composefirestore.ui.theme.ComposeFireStoreTheme
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.material3.TextField
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.Button
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.unit.dp
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.firestore
+import tw.edu.pu.csim.s1114702.composefirestore.ui.theme.ComposeFireStoreTheme
+
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+        setContent {
+            ComposeFireStoreTheme {
+                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+                    /*
+                    Greeting(
+                        name = "Android",
+                        modifier = Modifier.padding(innerPadding)
+                    )
+                    */
+                    Birth(m = Modifier.padding(innerPadding))
+
+                }
+            }
+        }
+    }
+
+    data class Person(
+        var userName: String = "",
+        var userWeight: String = "",
+        var userHeight: String = "",
+        var bmi: String = "",
+        var bmiCategory: String = ""
+    )
+
+    @Composable
+    fun Birth(m: Modifier = Modifier) {
+        var userName by remember { mutableStateOf("") }
+        var userWeight by remember { mutableStateOf("") }
+        var userHeight by remember { mutableStateOf("") }
+        var msg by remember { mutableStateOf("") }
+
+        val db = Firebase.firestore
+
+        fun calculateBMI(weight: Float, height: Float): Float {
+            return weight / ((height / 100) * (height / 100))
+        }
+
+        fun bmiCategory(bmi: Float): String {
+            return when {
+                bmi < 18.5 -> "體重過輕"
+                bmi in 18.5..24.9 -> "正常範圍"
+                bmi in 25.0..29.9 -> "過重"
+                bmi in 30.0..34.9 -> "輕度肥胖"
+                bmi in 35.0..39.9 -> "中度肥胖"
+                else -> "重度肥胖"
+            }
+        }
+
+        fun getBMIMessage(weight: String, height: String): String {
+            val weightFloat = weight.toFloatOrNull()
+            val heightFloat = height.toFloatOrNull()
+
+            return if (weightFloat != null && heightFloat != null && weightFloat > 0f && heightFloat > 0f) {
+                val bmi = calculateBMI(weightFloat, heightFloat)
+                "您的BMI是：${"%.2f".format(bmi)}\n${bmiCategory(bmi)}"
+            } else {
+                "請輸入有效的體重和身高"
+            }
+        }
+
+        fun getWater(weight: String): String {
+            val weightFloat = weight.toFloatOrNull()
+            return if (weightFloat != null && weightFloat > 0f) {
+                val waterIntake = weightFloat * 30
+                "每日建議飲水量：${"%.2f".format(waterIntake)} 毫升"
+            } else {
+                "請輸入有效的體重以計算建議飲水量"
+            }
+        }
+
+        Column(modifier = Modifier.padding(16.dp)) {
+            TextField(
+                value = userName,
+                onValueChange = { userName = it },
+                modifier = m.fillMaxWidth(),
+                label = { Text("姓名") },
+                placeholder = { Text("請輸入您的姓名") }
+            )
+            TextField(
+                value = userWeight,
+                onValueChange = { userWeight = it },
+                modifier = m.fillMaxWidth(),
+                label = { Text("體重 (kg)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            )
+            TextField(
+                value = userHeight,
+                onValueChange = { userHeight = it },
+                modifier = m.fillMaxWidth(),
+                label = { Text("身高 (cm)") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
+            )
+
+            Text(
+                text = "${getBMIMessage(userWeight, userHeight)}\n${getWater(userWeight)}",
+                modifier = m.padding(vertical = 16.dp)
+            )
+
+            Row(modifier = m.fillMaxWidth()) {
+                Button(onClick = {
+                    val weightFloat = userWeight.toFloatOrNull()
+                    val heightFloat = userHeight.toFloatOrNull()
+
+                    if (weightFloat != null && heightFloat != null && weightFloat > 0f && heightFloat > 0f) {
+                        val bmi = calculateBMI(weightFloat, heightFloat)
+                        val category = bmiCategory(bmi)
+
+                        val user = Person(
+                            userName = userName,
+                            userWeight = userWeight,
+                            userHeight = userHeight,
+                            bmi = "%.2f".format(bmi),
+                            bmiCategory = category
+                        )
+
+                        db.collection("HealthCheck")
+                            .add(user)
+                            .addOnSuccessListener {
+                                msg = "新增資料成功"
+                            }
+                            .addOnFailureListener { e ->
+                                msg = "新增資料失敗：${e.message}"
+                            }
+                    } else {
+                        msg = "請輸入有效的體重和身高"
+                    }
+                }, modifier = Modifier.weight(1f)) {
+                    Text("新增資料")
+                }
+
+
+                Button(onClick = {
+                    db.collection("HealthCheck")
+                        .whereEqualTo("userName", userName)
+                        .get()
+                        .addOnSuccessListener { documents ->
+                            if (documents.isEmpty) {
+                                msg = "找不到資料"
+                            } else {
+                                msg = "查詢成功："
+                                for (doc in documents) {
+                                    msg += "\n姓名: ${doc.getString("userName")}" +
+                                            "\n體重: ${doc.getString("userWeight")}" +
+                                            "\n身高: ${doc.getString("userHeight")}" +
+                                            "\nBMI: ${doc.getString("bmi")}, ${doc.getString("bmiCategory")}"
+                                }
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            msg = "查詢資料失敗：${e.message}"
+                        }
+                },
+                        modifier = Modifier.weight(1f)
+                ) {
+                    Text("查詢資料")
+                }
+
+
+                Button(onClick = {
+                    db.collection("HealthCheck")
+                        .whereEqualTo("userName", userName)
+                        .get()
+                        .addOnSuccessListener { documents ->
+                            if (documents.isEmpty) {
+                                msg = "找不到資料"
+                            } else {
+                                for (doc in documents) {
+                                    db.collection("HealthCheck").document(doc.id).delete()
+                                        .addOnSuccessListener {
+                                            msg = "刪除成功"
+                                        }
+                                        .addOnFailureListener { e ->
+                                            msg = "刪除失敗：${e.message}"
+                                        }
+                                }
+                            }
+                        }
+                        .addOnFailureListener { e ->
+                            msg = "刪除資料失敗：${e.message}"
+                        }
+                },
+                    modifier = Modifier.weight(1f)
+                    ) {
+                    Text("刪除資料")
+                }
+
+            }
+
+            Text(text = msg, modifier = m.padding(vertical = 8.dp))
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*package tw.edu.pu.csim.s1114702.composefirestore
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -161,3 +402,4 @@ data class Person(
 
 
 
+/*/
