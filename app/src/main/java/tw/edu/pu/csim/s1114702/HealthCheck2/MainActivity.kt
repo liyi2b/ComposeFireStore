@@ -1,4 +1,4 @@
-package tw.edu.pu.csim.s1114702.composefirestore
+package tw.edu.pu.csim.s1114702.HealthCheck2
 
 
 import android.os.Bundle
@@ -11,7 +11,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import tw.edu.pu.csim.s1114702.composefirestore.ui.theme.ComposeFireStoreTheme
+import tw.edu.pu.csim.s1114702.HealthCheck2.ui.theme.ComposeFireStoreTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,7 +26,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
-import tw.edu.pu.csim.s1114702.composefirestore.ui.theme.ComposeFireStoreTheme
 
 
 class MainActivity : ComponentActivity() {

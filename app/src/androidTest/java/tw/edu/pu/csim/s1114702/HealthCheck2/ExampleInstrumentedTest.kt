@@ -1,4 +1,4 @@
-package tw.edu.pu.csim.s1114702.composefirestore
+package tw.edu.pu.csim.s1114702.HealthCheck2
 
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.test.ext.junit.runners.AndroidJUnit4

@@ -1,4 +1,4 @@
-package tw.edu.pu.csim.s1114702.composefirestore.ui.theme
+package tw.edu.pu.csim.s1114702.HealthCheck2.ui.theme
 
 import androidx.compose.ui.graphics.Color
 

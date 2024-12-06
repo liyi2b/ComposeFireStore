@@ -9,7 +9,7 @@ android {
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "tw.edu.pu.csim.s1114702.composefirestore"
+        applicationId = "tw.edu.pu.csim.s1114702.HealthCheck2"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
