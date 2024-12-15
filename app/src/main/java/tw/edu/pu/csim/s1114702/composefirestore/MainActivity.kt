@@ -1,31 +1,47 @@
 package tw.edu.pu.csim.s1114702.composefirestore
 
 
+//import android.R
+import android.R.id
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material3.AlertDialogDefaults.containerColor
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import tw.edu.pu.csim.s1114702.composefirestore.ui.theme.ComposeFireStoreTheme
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.material3.TextField
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.Button
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.unit.dp
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
+import com.google.firebase.initialize
+import androidx.compose.ui.Alignment
+
 import tw.edu.pu.csim.s1114702.composefirestore.ui.theme.ComposeFireStoreTheme
 
 
@@ -33,30 +49,15 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        Firebase.initialize(this)
         setContent {
             ComposeFireStoreTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    /*
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                    */
                     Birth(m = Modifier.padding(innerPadding))
-
                 }
             }
         }
     }
-
-
-    data class Person(
-        var userName: String = "",
-        var userWeight: String = "",
-        var userHeight: String = "",
-        var bmi: String = "",
-        var bmiCategory: String = ""
-    )
 
     @Composable
     fun Birth(m: Modifier = Modifier) {
@@ -64,7 +65,7 @@ class MainActivity : ComponentActivity() {
         var userWeight by remember { mutableStateOf("") }
         var userHeight by remember { mutableStateOf("") }
         var msg by remember { mutableStateOf("") }
-
+        val lightPink = Color(0xFFF8EEDD)
         val db = Firebase.firestore
 
         fun calculateBMI(weight: Float, height: Float): Float {
@@ -104,127 +105,209 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        Column(modifier = Modifier.padding(16.dp)) {
-            TextField(
-                value = userName,
-                onValueChange = { userName = it },
-                modifier = m.fillMaxWidth(),
-                label = { Text("姓名") },
-                placeholder = { Text("請輸入您的姓名") }
-            )
-            TextField(
-                value = userWeight,
-                onValueChange = { userWeight = it },
-                modifier = m.fillMaxWidth(),
-                label = { Text("體重 (kg)") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-            )
-            TextField(
-                value = userHeight,
-                onValueChange = { userHeight = it },
-                modifier = m.fillMaxWidth(),
-                label = { Text("身高 (cm)") },
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-            )
+        Box(modifier = Modifier.fillMaxSize()) {
+            // 固定顶部的部分
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(color = Color.LightGray)
+                    .padding(top = 24.dp, start = 8.dp, end = 8.dp, bottom = 8.dp)
+            ) {
+                Text(
+                    text = "檢康無憂",
+                    style = androidx.compose.ui.text.TextStyle(
+                        fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                        color = Color.Black
+                    )
+                )
+            }
 
-            Text(
-                text = "${getBMIMessage(userWeight, userHeight)}\n${getWater(userWeight)}",
-                modifier = m.padding(vertical = 16.dp)
-            )
 
-            Row(modifier = m.fillMaxWidth()) {
-                Button(onClick = {
-                    val weightFloat = userWeight.toFloatOrNull()
-                    val heightFloat = userHeight.toFloatOrNull()
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(top = 40.dp) // 留出顶部标题的空间
+            ) {
+                item {
 
-                    if (weightFloat != null && heightFloat != null && weightFloat > 0f && heightFloat > 0f) {
-                        val bmi = calculateBMI(weightFloat, heightFloat)
-                        val category = bmiCategory(bmi)
 
-                        val user = Person(
-                            userName = userName,
-                            userWeight = userWeight,
-                            userHeight = userHeight,
-                            bmi = "%.2f".format(bmi),
-                            bmiCategory = category
+                Column(modifier = Modifier.padding(16.dp)) {
+
+
+                    @OptIn(ExperimentalMaterial3Api::class)
+                    TextField(
+                        value = userName,
+                        onValueChange = { userName = it },
+                        modifier = m.fillMaxWidth(),
+                        label = { Text("姓名") },
+                        placeholder = { Text("請輸入您的姓名") },
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = lightPink, // 設置背景顏色
+                            //textColor = Color.Black,          // 設置文字顏色
+                            focusedIndicatorColor = Color.Black, // 設置聚焦時的指示器顏色
+                            unfocusedIndicatorColor = Color.Gray, // 設置未聚焦時的指示器顏色
+                            focusedLabelColor = Color.DarkGray
                         )
+                    )
+                    @OptIn(ExperimentalMaterial3Api::class)
+                    TextField(
+                        value = userWeight,
+                        onValueChange = { userWeight = it },
+                        modifier = m.fillMaxWidth(),
+                        label = { Text("體重 (kg)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = lightPink, // 設置背景顏色
+                            //textColor = Color.Black,          // 設置文字顏色
+                            focusedIndicatorColor = Color.Black, // 設置聚焦時的指示器顏色
+                            unfocusedIndicatorColor = Color.Gray, // 設置未聚焦時的指示器顏色
+                            focusedLabelColor = Color.DarkGray
+                        )
+                    )
+                    @OptIn(ExperimentalMaterial3Api::class)
+                    TextField(
+                        value = userHeight,
+                        onValueChange = { userHeight = it },
+                        modifier = m.fillMaxWidth(),
+                        label = { Text("身高 (cm)") },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                        colors = TextFieldDefaults.textFieldColors(
+                            containerColor = lightPink, // 設置背景顏色
+                            //textColor = Color.Black,          // 設置文字顏色
+                            focusedIndicatorColor = Color.Black, // 設置聚焦時的指示器顏色
+                            unfocusedIndicatorColor = Color.Gray, // 設置未聚焦時的指示器顏色
+                            focusedLabelColor = Color.DarkGray
+                        )
+                    )
 
-                        db.collection("HealthCheck")
-                            .add(user)
-                            .addOnSuccessListener {
-                                msg = "新增資料成功"
+                    Text(
+                        text = "${getBMIMessage(userWeight, userHeight)}\n${getWater(userWeight)}",
+                        modifier = m.padding(vertical = 16.dp)
+                    )
+
+                    Row(modifier = m.fillMaxWidth()) {
+                        Button(onClick = {
+                            val weightFloat = userWeight.toFloatOrNull()
+                            val heightFloat = userHeight.toFloatOrNull()
+
+                            if (weightFloat != null && heightFloat != null && weightFloat > 0f && heightFloat > 0f) {
+                                val bmi = calculateBMI(weightFloat, heightFloat)
+                                val category = bmiCategory(bmi)
+
+                                val user = Person(
+                                    userName = userName,
+                                    userWeight = userWeight,
+                                    userHeight = userHeight,
+                                    bmi = "%.2f".format(bmi),
+                                    bmiCategory = category
+                                )
+
+                                db.collection("HealthCheck")
+                                    .add(user)
+                                    .addOnSuccessListener {
+                                        msg = "新增資料成功"
+                                    }
+                                    .addOnFailureListener { e ->
+                                        msg = "新增資料失敗：${e.message}"
+                                    }
+                            } else {
+                                msg = "請輸入有效的體重和身高"
                             }
-                            .addOnFailureListener { e ->
-                                msg = "新增資料失敗：${e.message}"
-                            }
-                    } else {
-                        msg = "請輸入有效的體重和身高"
+                        }, modifier = Modifier.weight(1f),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Gray
+                            )
+                            ) {
+                            Text("新增資料")
+                        }
+
+                        Button(onClick = {
+                            db.collection("HealthCheck")
+                                .whereEqualTo("userName", userName)
+                                .get()
+                                .addOnSuccessListener { documents ->
+                                    if (documents.isEmpty) {
+                                        msg = "找不到資料"
+                                    } else {
+                                        msg = "查詢成功："
+                                        for (doc in documents) {
+                                            msg += "\n姓名: ${doc.getString("userName")}" +
+                                                    "\n體重: ${doc.getString("userWeight")}" +
+                                                    "\n身高: ${doc.getString("userHeight")}" +
+                                                    "\nBMI: ${doc.getString("bmi")}, ${doc.getString("bmiCategory")}"
+                                        }
+                                    }
+                                }
+                                .addOnFailureListener { e ->
+                                    msg = "查詢資料失敗：${e.message}"
+                                }
+                        }, modifier = Modifier.weight(1f)
+                            ,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Gray
+                            )) {
+                            Text("查詢資料")
+                        }
+
+                        Button(onClick = {
+                            db.collection("HealthCheck")
+                                .whereEqualTo("userName", userName)
+                                .get()
+                                .addOnSuccessListener { documents ->
+                                    if (documents.isEmpty) {
+                                        msg = "找不到資料"
+                                    } else {
+                                        for (doc in documents) {
+                                            db.collection("HealthCheck").document(doc.id).delete()
+                                                .addOnSuccessListener {
+                                                    msg = "刪除成功"
+                                                }
+                                                .addOnFailureListener { e ->
+                                                    msg = "刪除失敗：${e.message}"
+                                                }
+                                        }
+                                    }
+                                }
+                                .addOnFailureListener { e ->
+                                    msg = "刪除資料失敗：${e.message}"
+                                }
+                        }, modifier = Modifier.weight(1f)
+                            ,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = Color.Gray
+                            )) {
+                            Text("刪除資料")
+                        }
                     }
-                }, modifier = Modifier.weight(1f)) {
-                    Text("新增資料")
+
+                    Text(text = msg, modifier = m.padding(vertical = 8.dp))
                 }
-
-
-                Button(onClick = {
-                    db.collection("HealthCheck")
-                        .whereEqualTo("userName", userName)
-                        .get()
-                        .addOnSuccessListener { documents ->
-                            if (documents.isEmpty) {
-                                msg = "找不到資料"
-                            } else {
-                                msg = "查詢成功："
-                                for (doc in documents) {
-                                    msg += "\n姓名: ${doc.getString("userName")}" +
-                                            "\n體重: ${doc.getString("userWeight")}" +
-                                            "\n身高: ${doc.getString("userHeight")}" +
-                                            "\nBMI: ${doc.getString("bmi")}, ${doc.getString("bmiCategory")}"
-                                }
-                            }
-                        }
-                        .addOnFailureListener { e ->
-                            msg = "查詢資料失敗：${e.message}"
-                        }
-                },
-                        modifier = Modifier.weight(1f)
-                ) {
-                    Text("查詢資料")
-                }
-
-
-                Button(onClick = {
-                    db.collection("HealthCheck")
-                        .whereEqualTo("userName", userName)
-                        .get()
-                        .addOnSuccessListener { documents ->
-                            if (documents.isEmpty) {
-                                msg = "找不到資料"
-                            } else {
-                                for (doc in documents) {
-                                    db.collection("HealthCheck").document(doc.id).delete()
-                                        .addOnSuccessListener {
-                                            msg = "刪除成功"
-                                        }
-                                        .addOnFailureListener { e ->
-                                            msg = "刪除失敗：${e.message}"
-                                        }
-                                }
-                            }
-                        }
-                        .addOnFailureListener { e ->
-                            msg = "刪除資料失敗：${e.message}"
-                        }
-                },
-                    modifier = Modifier.weight(1f)
-                    ) {
-                    Text("刪除資料")
-                }
+            }
 
             }
 
-            Text(text = msg, modifier = m.padding(vertical = 8.dp))
+
+
+             //添加右下角的圖片
+            Image(
+                painter = painterResource(id = R.drawable.compose), // 指定圖片資源名稱
+                contentDescription = "右下角圖片",
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(16.dp)
+                    .size(100.dp)
+            )
+
         }
     }
+
+    data class Person(
+        var userName: String = "",
+        var userWeight: String = "",
+        var userHeight: String = "",
+        var bmi: String = "",
+        var bmiCategory: String = ""
+    )
 }
 
 
@@ -241,6 +324,7 @@ class MainActivity : ComponentActivity() {
 
 
 /*package tw.edu.pu.csim.s1114702.composefirestore
+
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -403,4 +487,4 @@ data class Person(
 
 
 
-/*/
+*/
