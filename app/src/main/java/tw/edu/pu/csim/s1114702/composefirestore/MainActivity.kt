@@ -238,6 +238,7 @@ class MainActivity : ComponentActivity() {
                                         }
                                     }
                                 }
+
                                 .addOnFailureListener { e ->
                                     msg = "查詢資料失敗：${e.message}"
                                 }
